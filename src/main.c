@@ -1,3 +1,4 @@
+#include <duk_config.h>
 #include <duktape.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -36,6 +37,12 @@ void get_file_content(FILE *file, char *buf, size_t size) {
   assert(n_written == 1, reason, reason);
 }
 
+duk_ret_t js_println(duk_context *ctx) {
+  const char *str = duk_safe_to_string(ctx, -1);
+  printf("%s\n", str);
+  return 0;
+}
+
 int main(int nargs, char *args[]) {
   char *script_path = get_script_path(nargs, args);
 
@@ -48,10 +55,13 @@ int main(int nargs, char *args[]) {
   char *script_content = malloc(script_size);
   get_file_content(script_file, script_content, script_size);
 
-  debug_log("executing script");
+  debug_log("setting globals");
   duk_context *ctx = duk_create_heap_default();
+  duk_push_c_function(ctx, js_println, 1);
+  duk_put_global_literal(ctx, "println");
+
+  debug_log("executing script");
   duk_eval_string(ctx, script_content);
-  double result = duk_get_number(ctx, -1);
-  printf("Result: %f\n", result);
+
   return EXIT_SUCCESS;
 }
