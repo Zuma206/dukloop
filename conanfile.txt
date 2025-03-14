@@ -1,0 +1,9 @@
+[requires]
+duktape/2.7.0
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[layout]
+cmake_layout

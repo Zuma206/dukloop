@@ -1,3 +1,4 @@
+#include <duktape.h>
 #include <stdio.h>
 #include <stdlib.h>
 
