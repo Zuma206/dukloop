@@ -1,3 +1,4 @@
+#include <duk_config.h>
 #include <duktape.h>
 #include <stdio.h>
 
@@ -10,12 +11,21 @@ static duk_ret_t file_stream(duk_context *ctx) {
   return 0;
 }
 
-static duk_ret_t file_stream_print(duk_context *ctx) {
+static void file_stream_print_c(duk_context *ctx, char *end) {
   const char *text = duk_get_string(ctx, -1);
   duk_push_this(ctx);
   duk_get_prop_literal(ctx, -1, FILE_STREAM_PROP);
   FILE *file_stream = duk_get_pointer(ctx, -1);
-  fprintf(file_stream, "%s", text);
+  fprintf(file_stream, "%s%s", text, end);
+}
+
+static duk_ret_t file_stream_print(duk_context *ctx) {
+  file_stream_print_c(ctx, "");
+  return 0;
+}
+
+static duk_ret_t file_stream_println(duk_context *ctx) {
+  file_stream_print_c(ctx, "\n");
   return 0;
 }
 
@@ -24,6 +34,8 @@ static void file_stream_init(duk_context *ctx) {
   duk_push_object(ctx);
   duk_push_c_function(ctx, file_stream_print, 1);
   duk_put_prop_literal(ctx, -2, "print");
+  duk_push_c_function(ctx, file_stream_println, 1);
+  duk_put_prop_literal(ctx, -2, "println");
   duk_put_prop_literal(ctx, -2, "prototype");
   duk_put_global_literal(ctx, "FileStream");
 }
