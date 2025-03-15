@@ -30,9 +30,9 @@ static void file_stream_init(duk_context *ctx) {
 
 static void file_stream_new_global(duk_context *ctx, char *name, FILE *file) {
   duk_get_global_literal(ctx, "FileStream");
-  duk_push_pointer(ctx, stdout);
+  duk_push_pointer(ctx, file);
   duk_new(ctx, 1);
-  duk_put_global_literal(ctx, "stdout");
+  duk_put_global_string(ctx, name);
 }
 
 void dloop_file_stream_api_init(duk_context *ctx) {

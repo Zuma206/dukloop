@@ -4,6 +4,7 @@
 #include <duktape.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 static char *get_script_path(int nargs, char *args[]) {
   dloop_assert(nargs == 2, "get the script path",
@@ -31,6 +32,11 @@ static void get_file_content(FILE *file, char *buf, size_t size) {
                "cannot read the file");
 }
 
+static void fatal_error_handler(void *_, const char *msg) {
+  fprintf(stderr, "%s\n", msg);
+  exit(EXIT_FAILURE);
+}
+
 int main(int nargs, char *args[]) {
   char *script_path = get_script_path(nargs, args);
   FILE *script_file = fopen(script_path, "r");
@@ -40,7 +46,8 @@ int main(int nargs, char *args[]) {
   char *script_content = malloc(script_size);
   get_file_content(script_file, script_content, script_size);
 
-  duk_context *ctx = duk_create_heap_default();
+  duk_context *ctx =
+      duk_create_heap(NULL, NULL, NULL, NULL, fatal_error_handler);
   dloop_file_stream_api_init(ctx);
   duk_eval_string(ctx, script_content);
 
