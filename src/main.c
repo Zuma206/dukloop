@@ -1,3 +1,4 @@
+#include "filestreams.h"
 #include <duk_config.h>
 #include <duktape.h>
 #include <stdbool.h>
@@ -43,22 +44,6 @@ duk_ret_t js_println(duk_context *ctx) {
   return 0;
 }
 
-duk_ret_t js_file_stream_constructor(duk_context *ctx) {
-  duk_push_this(ctx);
-  duk_swap_top(ctx, -2);
-  duk_put_prop_literal(ctx, -2, DUK_HIDDEN_SYMBOL("file_stream"));
-  return 0;
-}
-
-duk_ret_t js_file_stream_print(duk_context *ctx) {
-  const char *text = duk_get_string(ctx, -1);
-  duk_push_this(ctx);
-  duk_get_prop_literal(ctx, -1, DUK_HIDDEN_SYMBOL("file_stream"));
-  FILE *file_stream = duk_get_pointer(ctx, -1);
-  fprintf(file_stream, "%s", text);
-  return 0;
-}
-
 int main(int nargs, char *args[]) {
   char *script_path = get_script_path(nargs, args);
 
@@ -71,21 +56,8 @@ int main(int nargs, char *args[]) {
   char *script_content = malloc(script_size);
   get_file_content(script_file, script_content, script_size);
 
-  debug_log("setting globals");
   duk_context *ctx = duk_create_heap_default();
-  duk_push_c_function(ctx, js_file_stream_constructor, 1);
-  duk_push_object(ctx);
-  duk_push_c_function(ctx, js_file_stream_print, 1);
-  duk_put_prop_literal(ctx, -2, "print");
-  duk_put_prop_literal(ctx, -2, "prototype");
-  debug_log("message");
-  duk_put_global_literal(ctx, "FileStream");
-  duk_get_global_literal(ctx, "FileStream");
-  duk_push_pointer(ctx, stdout);
-  duk_new(ctx, 1);
-  duk_put_global_literal(ctx, "stdout");
-
-  debug_log("executing script");
+  dloop_file_stream_api_init(ctx);
   duk_eval_string(ctx, script_content);
 
   return EXIT_SUCCESS;
